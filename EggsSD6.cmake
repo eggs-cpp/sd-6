@@ -143,6 +143,11 @@ set(_Eggs_SD6_Includes
   "valarray"
   "vector")
 
+set(_Eggs_SD6_Attributes
+  "carries_dependency"
+  "deprecated"
+  "noreturn")
+
 function(_Eggs_SD6_HasDefinedMacro macro output) # <value> <variable>
   set(_Eggs_SD6_MacroName ${macro})
   set(test "${CMAKE_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/${macro}.cpp")
@@ -260,6 +265,40 @@ function(_Eggs_SD6_IncludeTest header_name output output_provided) # <value> <va
   set(${output_provided} ${provided} PARENT_SCOPE)
 endfunction()
 
+function(_Eggs_SD6_AttributeTest attribute output output_provided) # <value> <variable> <variable>
+  if(DEFINED _Eggs_SD6__has_attribute_${attribute})
+    list(GET _Eggs_SD6__has_attribute_${attribute} 0 result)
+    list(GET _Eggs_SD6__has_attribute_${attribute} 1 provided)
+  else()
+    if(DEFINED _Eggs_SD6__has_attribute)
+      set(has_attribute ${_Eggs_SD6__has_attribute})
+    else()
+      _Eggs_SD6_HasDefinedMacro("__has_cpp_attribute" has_attribute)
+      set(_Eggs_SD6__has_attribute ${has_attribute} CACHE INTERNAL "__has_attribute")
+    endif()
+
+    if(has_attribute)
+      _Eggs_SD6_TestPPExpression("${attribute}" "__has_cpp_attribute(${attribute})" result)
+    else()
+      # _Eggs_SD6_HasAttribute(${attribute} result)
+      set(result FALSE)
+    endif()
+
+    if(result)
+      set(result "1")
+    else()
+      set(result "0")
+    endif()
+    set(provided ${has_attribute})
+
+    message(STATUS "Eggs.SD-6 __cpp_has_attribute(${attribute}): ${result}")
+    set(_Eggs_SD6__has_attribute_${attribute} ${result} ${provided} CACHE INTERNAL "__cpp_has_attribute(${attribute})")
+  endif()
+
+  set(${output} ${result} PARENT_SCOPE)
+  set(${output_provided} ${provided} PARENT_SCOPE)
+endfunction()
+
 macro(_Eggs_SD6_AddDefinition output name value provided) # <variable> <value> <value> <value>
   if(DEFINED ${output})
     if(${provided})
@@ -323,6 +362,33 @@ macro(Eggs_SD6_Setup) # PREFIX UPPERCASE OUTPUT_FILE
     else()
       _Eggs_SD6_AddDefinition(_Eggs_SD6_Content
           "${_Eggs_SD6_MacroName}(SD6_header_name)" "${_Eggs_SD6_MacroName}_##SD6_header_name" FALSE)
+    endif()
+
+    # process attributes
+    foreach(attribute ${_Eggs_SD6_Attributes})
+      _Eggs_SD6_AttributeTest(${attribute} _Eggs_SD6_Value _Eggs_SD6_Provided)
+      if(_Eggs_SD6_Value AND NOT _Eggs_SD6_Provided)
+        set(_Eggs_SD6_MacroName "${_Eggs_SD6_PREFIX}_has_attribute_${attribute}")
+        if(_Eggs_SD6_UPPERCASE)
+          string(TOUPPER ${_Eggs_SD6_MacroName} _Eggs_SD6_MacroName)
+        endif()
+
+        _Eggs_SD6_AddDefinition(_Eggs_SD6_Content
+            "${_Eggs_SD6_MacroName}" "${_Eggs_SD6_Value}" FALSE)
+      endif()
+    endforeach()
+
+    set(_Eggs_SD6_MacroName "${_Eggs_SD6_PREFIX}_has_attribute")
+    if(_Eggs_SD6_UPPERCASE)
+      string(TOUPPER ${_Eggs_SD6_MacroName} _Eggs_SD6_MacroName)
+    endif()
+
+    if(_Eggs_SD6_Provided)
+      _Eggs_SD6_AddDefinition(_Eggs_SD6_Content
+          "${_Eggs_SD6_MacroName}(SD6_attribute)" "__has_cpp_attribute(#SD6_attribute)" FALSE)
+    else()
+      _Eggs_SD6_AddDefinition(_Eggs_SD6_Content
+          "${_Eggs_SD6_MacroName}(SD6_attribute)" "${_Eggs_SD6_MacroName}_##SD6_attribute" FALSE)
     endif()
 
     # generate output file
