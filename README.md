@@ -107,13 +107,14 @@ name.
 > ```
 
 Given that there is no known way to emulate this particular syntax,
-**Eggs.SD-6** provides instead the macro `__cpp_has_include` which can only
-take a simple _header-name_ as argument &mdash;`__cpp_has_include(optional)`
-&mdash;. If the implementation provides the `__has_include` feature, then the
-macro is defined to leverage it:
+**Eggs.SD-6** provides instead the macros `__cpp_has_include` and
+`__cpp_has_include_experimental` which can only take a simple _header-name_ as
+argument &mdash;`__cpp_has_include(optional)`&mdash;. If the implementation
+provides the `__has_include` feature, then the macro is defined to leverage it:
 
 ```C++
 #define __cpp_has_include(header_name) __has_include(<header_name>)
+#define __cpp_has_include_experimental(header_name) __has_include(<experimental/header_name>)
 ```
 
 Otherwise, then for each known header present a corresponding
@@ -121,14 +122,10 @@ Otherwise, then for each known header present a corresponding
 defined to evaluate to it when present:
 
 ```C++
-#define __cpp_has_include_optional 1
+#define __cpp_has_include_experimental_optional 1
 #define __cpp_has_include(header_name) __cpp_has_include_##header_name
+#define __cpp_has_include_experimental(header_name) __cpp_has_include_experimental_##header_name
 ```
-
-Currently, there is no way to test for the presence of experimental headers.
-Support for it will follow soon, either in the form of
-`__cpp_has_experimental_include(header-name)` or in the more generic form of
-`__cpp_has_include(...)` &mdash;via variadic macros&mdash;.
 
 #### Attributes
 
@@ -148,7 +145,7 @@ is suggested for testing for the support of an attribute. During configuration,
 
 **Eggs.SD-6** provides instead the macro `__cpp_has_attribute` &mdash;rationale
 for this awkward name shift will become clear in the 'References' section
-&mdash;. If the implementation provides the `__has_cpp_attribute` feature, then 
+&mdash;. If the implementation provides the `__has_cpp_attribute` feature, then
 the macro is defined to leverage it:
 
 ```C++

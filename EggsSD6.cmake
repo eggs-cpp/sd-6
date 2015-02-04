@@ -155,6 +155,33 @@ _Eggs_SD6_Include("unordered_set")
 _Eggs_SD6_Include("utility")
 _Eggs_SD6_Include("valarray")
 _Eggs_SD6_Include("vector")
+_Eggs_SD6_Include("experimental/algorithm")
+_Eggs_SD6_Include("experimental/any")
+_Eggs_SD6_Include("experimental/chrono")
+_Eggs_SD6_Include("experimental/deque")
+_Eggs_SD6_Include("experimental/execution_policy")
+_Eggs_SD6_Include("experimental/filesystem")
+_Eggs_SD6_Include("experimental/forward_list")
+_Eggs_SD6_Include("experimental/functional")
+_Eggs_SD6_Include("experimental/future")
+_Eggs_SD6_Include("experimental/list")
+_Eggs_SD6_Include("experimental/map")
+_Eggs_SD6_Include("experimental/memory")
+_Eggs_SD6_Include("experimental/memory_resource")
+_Eggs_SD6_Include("experimental/numeric")
+_Eggs_SD6_Include("experimental/optional")
+_Eggs_SD6_Include("experimental/ratio")
+_Eggs_SD6_Include("experimental/regex")
+_Eggs_SD6_Include("experimental/set")
+_Eggs_SD6_Include("experimental/string")
+_Eggs_SD6_Include("experimental/string_view")
+_Eggs_SD6_Include("experimental/system_error")
+_Eggs_SD6_Include("experimental/tuple")
+_Eggs_SD6_Include("experimental/type_traits")
+_Eggs_SD6_Include("experimental/unordered_map")
+_Eggs_SD6_Include("experimental/unordered_set")
+_Eggs_SD6_Include("experimental/utility")
+_Eggs_SD6_Include("experimental/vector")
 
 macro(_Eggs_SD6_Attribute attribute_name) # <string>
   list(APPEND _Eggs_SD6_Attributes ${attribute_name})
@@ -208,7 +235,7 @@ function(_Eggs_SD6_FeatureTest name output output_provided) # <value> <variable>
         _Eggs_SD6_TestPPExpression("__cpp_${name}" "__cpp_${name} >= ${value}" "${prelude}" test)
       else()
         set(source "${_Eggs_SD6_ModulePath}/tests/cpp/${name}.${value}.cpp")
-        string(REPLACE "/tests/cpp/lib_" "/tests/cpp/lib/" source ${source})
+        string(REPLACE "/tests/cpp/lib_" "/tests/cpp/lib/" source "${source}")
 
         try_compile(test "${CMAKE_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}" ${source})
       endif()
@@ -339,11 +366,12 @@ macro(Eggs_SD6_Setup) # PREFIX UPPERCASE OUTPUT_FILE
   # process includes
   foreach(header_name ${_Eggs_SD6_Includes})
     _Eggs_SD6_IncludeTest(${header_name} _Eggs_SD6_Value _Eggs_SD6_Provided)
-    if(_Eggs_SD6_Value AND NOT _Eggs_SD6_Provided)
+    if(_Eggs_SD6_Value)
+      string(REPLACE "/" "_" header_name "${header_name}")
       _Eggs_SD6_SetMacroName(_Eggs_SD6_MacroName "has_include_${header_name}")
 
       _Eggs_SD6_AddDefinition(
-          "${_Eggs_SD6_MacroName}" "${_Eggs_SD6_Value}" FALSE)
+          "${_Eggs_SD6_MacroName}" "${_Eggs_SD6_Value}" ${_Eggs_SD6_Provided})
     endif()
   endforeach()
 
@@ -358,14 +386,25 @@ macro(Eggs_SD6_Setup) # PREFIX UPPERCASE OUTPUT_FILE
         "${_Eggs_SD6_MacroName}_##SD6_header_name" FALSE)
   endif()
 
+  _Eggs_SD6_SetMacroName(_Eggs_SD6_MacroName "has_include_experimental")
+  if(_Eggs_SD6_Provided)
+    _Eggs_SD6_AddDefinition(
+        "${_Eggs_SD6_MacroName}(SD6_header_name)"
+        "__has_include(<experimental/SD6_header_name>)" FALSE)
+  else()
+    _Eggs_SD6_AddDefinition(
+        "${_Eggs_SD6_MacroName}(SD6_header_name)"
+        "${_Eggs_SD6_MacroName}_##SD6_header_name" FALSE)
+  endif()
+
   # process attributes
   foreach(attribute_name ${_Eggs_SD6_Attributes})
     _Eggs_SD6_AttributeTest(${attribute_name} _Eggs_SD6_Value _Eggs_SD6_Provided)
-    if(_Eggs_SD6_Value AND NOT _Eggs_SD6_Provided)
+    if(_Eggs_SD6_Value)
       _Eggs_SD6_SetMacroName(_Eggs_SD6_MacroName "_has_attribute_${attribute_name}")
 
       _Eggs_SD6_AddDefinition(
-          "${_Eggs_SD6_MacroName}" "${_Eggs_SD6_Value}" FALSE)
+          "${_Eggs_SD6_MacroName}" "${_Eggs_SD6_Value}" ${_Eggs_SD6_Provided})
     endif()
   endforeach()
 
