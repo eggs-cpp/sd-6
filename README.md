@@ -5,9 +5,14 @@
 
 **Eggs.SD-6** is a _CMake_ based **SD-6** approximation.
 
+> **Disclaimer:**
+> This project started as an experiment on _CMake_. As such, it is likely to be
+> incorrect, sub-optimal and/or simply non-idiomatic. Suggestions and
+> pull-requests &mdash;against `develop`&mdash; to improve it are welcome.
+
 [**SD-6**](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4200.htm
 "Feature-testing recommendations for C++") is the sixth standing document
-issued by the C++ standardization committee. It consist of guidelines for both
+issued by the C++ standardization committee. It consists of guidelines for both
 implementors and programmers concerning feature-test macros. Consider the
 following excerpt of the document, depicting the status quo:
 
@@ -58,10 +63,10 @@ the document was issued or the macro names were decided will not promote
 supported features. While this is not in itself a problem &mdash;remaining
 identifiers after macro expansion are replaced with the pp-number `0`&mdash;,
 it would result in feature sub-utilization. For this reason, the status quo
-will only be affected slightly during this initial phase.
+will only be slightly affected during this initial phase.
 
 **Eggs.SD-6** was created with the purpose of retrofiting these implementations
-with the macros suggested in **SD-6**.
+with the macros suggested by **SD-6**.
 
 ### How it works
 
@@ -131,10 +136,20 @@ Among WG21 feature-testing recommendations, the `__has_cpp_attribute` feature
 is suggested for testing for the support of an attribute. During configuration,
 **Eggs.SD-6** tests for the availability of such feature.
 
+> ```C++
+> #ifdef __has_cpp_attribute
+> #  if __has_cpp_attribute(deprecated)
+> #    define ATTR_DEPRECATED(msg) [[deprecated(msg)]]
+> #  else
+> #    define ATTR_DEPRECATED(msg)
+> #  endif
+> #endif
+> ```
+
 **Eggs.SD-6** provides instead the macro `__cpp_has_attribute` &mdash;rationale
-for this awkard name shift will become clear in the 'References' section&mdash;.
-If the implementation provides the `__has_cpp_attribute` feature, then the
-macro is defined to leverage it:
+for this awkward name shift will become clear in the 'References' section
+&mdash;. If the implementation provides the `__has_cpp_attribute` feature, then 
+the macro is defined to leverage it:
 
 ```C++
 #define __cpp_has_attribute(attribute_token) __has_cpp_attribute(attribute_token)
@@ -168,12 +183,6 @@ macros for all supported features, even those provided by the implementation.
 If the `OUTPUT_FILE` argument is given, the definitions will be provided in a
 generated header file &mdash;via the usual `#define`s&mdash; instead of via
 `add_definitions`.
-
-### Disclaimer
-
-This project started as an experiment on _CMake_. As such, it is likely to be
-incorrect, sub-optimal and/or simply non-idiomatic. Suggestions and
-pull-requests &mdash;against `develop`&mdash; to improve it are welcome.
 
 ---
 
