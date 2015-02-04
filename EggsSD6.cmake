@@ -148,8 +148,9 @@ set(_Eggs_SD6_Attributes
   "deprecated"
   "noreturn")
 
-function(_Eggs_SD6_HasDefinedMacro macro output) # <value> <variable>
+function(_Eggs_SD6_HasDefinedMacro macro prelude output) # <value> <value> <variable>
   set(_Eggs_SD6_MacroName ${macro})
+  set(_Eggs_SD6_Prelude ${prelude})
   set(test "${CMAKE_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/${macro}.cpp")
   configure_file("${_Eggs_SD6_ModulePath}/tests/has_defined_macro.cpp" ${test})
   try_compile(result "${CMAKE_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}" ${test})
@@ -157,8 +158,9 @@ function(_Eggs_SD6_HasDefinedMacro macro output) # <value> <variable>
   file(REMOVE ${test})
 endfunction()
 
-function(_Eggs_SD6_TestPPExpression id expression output) # <value> <value> <variable>
+function(_Eggs_SD6_TestPPExpression id expression prelude output) # <value> <value> <value> <variable>
   set(_Eggs_SD6_PPExpression ${expression})
+  set(_Eggs_SD6_Prelude ${prelude})
   set(test "${CMAKE_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/${id}.cpp")
   configure_file("${_Eggs_SD6_ModulePath}/tests/test_pp_expression.cpp" ${test})
   try_compile(result "${CMAKE_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}" ${test})
@@ -175,7 +177,7 @@ function(_Eggs_SD6_HasInclude header_name output) # <value> <variable>
   file(REMOVE ${test})
 endfunction()
 
-function(_Eggs_SD6_FeatureTest macro macro_value source output output_provided) # <value> <value> <path> <variable> <variable>
+function(_Eggs_SD6_FeatureTest macro macro_value includes source output output_provided) # <value> <value> <list> <path> <variable> <variable>
   if(DEFINED _Eggs_SD6${macro})
     list(GET _Eggs_SD6${macro} 0 result)
     if(${result} LESS macro_value AND NOT ${result} EQUAL 0)
@@ -187,9 +189,13 @@ function(_Eggs_SD6_FeatureTest macro macro_value source output output_provided) 
     list(GET _Eggs_SD6${macro} 0 result)
     list(GET _Eggs_SD6${macro} 1 provided)
   else()
-    _Eggs_SD6_HasDefinedMacro(${macro} provided)
+    set(prelude "")
+    foreach(include ${includes})
+      set(prelude "${prelude}#include <${include}>\n")
+    endforeach()
+    _Eggs_SD6_HasDefinedMacro("${macro}" "${prelude}" provided)
     if(provided)
-      _Eggs_SD6_TestPPExpression("${macro}" "${macro} >= ${macro_value}" result)
+      _Eggs_SD6_TestPPExpression("${macro}" "${macro} >= ${macro_value}" "${prelude}" result)
     else()
       try_compile(result "${CMAKE_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}" ${source})
     endif()
@@ -225,8 +231,14 @@ function(_Eggs_SD6_AddFeatureTest feature output output_provided) # <value> <var
   foreach(feature_test ${feature_tests})
     get_filename_component(feature_test_ext ${feature_test} EXT)
     string(REGEX MATCH "[0123456789]+" feature_test_value ${feature_test_ext})
+    string(REGEX MATCH "${feature_test_value}\\.(.*)\\.cpp" feature_text_includes ${feature_test_ext})
+    if(CMAKE_MATCH_1)
+      string(REPLACE "." ";" feature_test_includes ${CMAKE_MATCH_1})
+    else()
+      set(feature_test_includes "")
+    endif()
 
-    _Eggs_SD6_FeatureTest("__cpp_${feature}" "${feature_test_value}" "${feature_test}" result provided)
+    _Eggs_SD6_FeatureTest("__cpp_${feature}" "${feature_test_value}" "${feature_test_includes}" "${feature_test}" result provided)
     set(${output} ${result} PARENT_SCOPE)
     set(${output_provided} ${provided} PARENT_SCOPE)
   endforeach()
@@ -240,12 +252,12 @@ function(_Eggs_SD6_IncludeTest header_name output output_provided) # <value> <va
     if(DEFINED _Eggs_SD6__has_include)
       set(has_include ${_Eggs_SD6__has_include})
     else()
-      _Eggs_SD6_HasDefinedMacro("__has_include" has_include)
+      _Eggs_SD6_HasDefinedMacro("__has_include" "" has_include)
       set(_Eggs_SD6__has_include ${has_include} CACHE INTERNAL "__has_include")
     endif()
 
     if(has_include)
-      _Eggs_SD6_TestPPExpression("${header_name}" "__has_include(<${header_name}>)" result)
+      _Eggs_SD6_TestPPExpression("${header_name}" "__has_include(<${header_name}>)" "" result)
     else()
       _Eggs_SD6_HasInclude(${header_name} result)
     endif()
@@ -273,12 +285,12 @@ function(_Eggs_SD6_AttributeTest attribute output output_provided) # <value> <va
     if(DEFINED _Eggs_SD6__has_attribute)
       set(has_attribute ${_Eggs_SD6__has_attribute})
     else()
-      _Eggs_SD6_HasDefinedMacro("__has_cpp_attribute" has_attribute)
+      _Eggs_SD6_HasDefinedMacro("__has_cpp_attribute" "" has_attribute)
       set(_Eggs_SD6__has_attribute ${has_attribute} CACHE INTERNAL "__has_attribute")
     endif()
 
     if(has_attribute)
-      _Eggs_SD6_TestPPExpression("${attribute}" "__has_cpp_attribute(${attribute})" result)
+      _Eggs_SD6_TestPPExpression("${attribute}" "__has_cpp_attribute(${attribute})" "" result)
     else()
       # _Eggs_SD6_HasAttribute(${attribute} result)
       set(result FALSE)
