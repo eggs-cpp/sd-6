@@ -397,7 +397,7 @@ macro(Eggs_SD6_Setup) # PREFIX UPPERCASE OUTPUT_FILE
 
     if(_Eggs_SD6_Provided)
       _Eggs_SD6_AddDefinition(_Eggs_SD6_Content
-          "${_Eggs_SD6_MacroName}(SD6_attribute)" "__has_cpp_attribute(#SD6_attribute)" FALSE)
+          "${_Eggs_SD6_MacroName}(SD6_attribute)" "__has_cpp_attribute(SD6_attribute)" FALSE)
     else()
       _Eggs_SD6_AddDefinition(_Eggs_SD6_Content
           "${_Eggs_SD6_MacroName}(SD6_attribute)" "${_Eggs_SD6_MacroName}_##SD6_attribute" FALSE)
