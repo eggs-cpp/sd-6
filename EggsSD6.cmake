@@ -410,19 +410,18 @@ macro(Eggs_SD6_Setup) # PREFIX UPPERCASE OUTPUT_FILE
       endif()
 
       file(WRITE ${_Eggs_SD6_OUTPUT_FILE}
-"// Eggs.SD-6
-//
-// Copyright Agustin K-ballo Berge, Fusion Fenix 2015
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#ifndef ${_Eggs_SD6_PREFIX}_SD6_HPP
-#define ${_Eggs_SD6_PREFIX}_SD6_HPP
-
-${_Eggs_SD6_Content}
-#endif
-")
+          "// Eggs.SD-6\n"
+          "//\n"
+          "// Copyright Agustin K-ballo Berge, Fusion Fenix 2015\n"
+          "//\n"
+          "// Distributed under the Boost Software License, Version 1.0. (See accompanying\n"
+          "// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)\n"
+          "\n"
+          "#ifndef ${_Eggs_SD6_PREFIX}_SD6_HPP\n"
+          "#define ${_Eggs_SD6_PREFIX}_SD6_HPP\n"
+          "\n"
+          "${_Eggs_SD6_Content}\n"
+          "#endif\n")
     endif()
     set(_Eggs_SD6_Setup TRUE CACHE INTERNAL "Eggs_SD6_Setup")
   endif()
