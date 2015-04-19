@@ -9,7 +9,7 @@
 #include <type_traits>
 
 void test_is_null_pointer() {
-  int check_nullptr[std::is_nullptr<std::nullptr_t>::value ? 1 : -1];
+  int check_nullptr[std::is_null_pointer<std::nullptr_t>::value ? 1 : -1];
 }
 
 int main() {
