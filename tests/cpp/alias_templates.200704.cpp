@@ -13,14 +13,14 @@ void test_alias() {
 }
 
 template <typename T>
-using template_alias = T;
+using alias_template = T;
 
-void test_template_alias() {
-  template_alias<int> x = 0;
+void test_alias_template() {
+  alias_template<int> x = 0;
   int* p = &x;
 }
 
 int main() {
   test_alias();
-  test_template_alias();
+  test_alias_template();
 }
